@@ -4,7 +4,6 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  password: string;
   role: Role;
   phone: string;
   avatar?: string;
@@ -116,17 +115,6 @@ export interface EmergencyAlert {
 }
 
 // ─── USERS ──────────────────────────────────────────────────────────────────
-
-export const users: User[] = [
-  { id: 'u1', name: 'Rajesh Kumar', email: 'admin', password: 'admin123', role: 'admin', phone: '9876543210' },
-  { id: 'u2', name: 'Manoj Patel', email: 'driver1', password: 'driver123', role: 'driver', phone: '9876543211', driverId: 'd1', busId: 'b1' },
-  { id: 'u3', name: 'Suresh Sharma', email: 'driver2', password: 'driver123', role: 'driver', phone: '9876543212', driverId: 'd2', busId: 'b2' },
-  { id: 'u4', name: 'Kiran Reddy', email: 'driver3', password: 'driver123', role: 'driver', phone: '9876543213', driverId: 'd3', busId: 'b3' },
-  { id: 'u5', name: 'Arun Kumar', email: 'student1', password: 'student123', role: 'student', phone: '9876543214', studentId: 's1' },
-  { id: 'u6', name: 'Priya Singh', email: 'student2', password: 'student123', role: 'student', phone: '9876543215', studentId: 's2' },
-  { id: 'u7', name: 'Sanjay Mehta (Parent)', email: 'parent1', password: 'parent123', role: 'parent', phone: '9876543216', studentId: 's1' },
-  { id: 'u8', name: 'Anita Verma (Parent)', email: 'parent2', password: 'parent123', role: 'parent', phone: '9876543217', studentId: 's2' },
-];
 
 // ─── STUDENTS ──────────────────────────────────────────────────────────────
 

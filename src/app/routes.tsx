@@ -11,6 +11,7 @@ import { RouteManagement } from './pages/admin/RouteManagement';
 import { DriverDashboard } from './pages/driver/DriverDashboard';
 import { StudentDashboard } from './pages/student/StudentDashboard';
 import { ParentDashboard } from './pages/parent/ParentDashboard';
+import { RoleCenter } from './pages/RoleCenter';
 
 
 function NotFound() {
@@ -38,22 +39,33 @@ export const router = createBrowserRouter([
       { path: 'admin/attendance', Component: Attendance },
       { path: 'admin/analytics', Component: Analytics },
       { path: 'admin/routes', Component: RouteManagement },
+      { path: 'admin/notifications', Component: RoleCenter },
+      { path: 'admin/profile', Component: RoleCenter },
+      { path: 'admin/settings', Component: RoleCenter },
       // Driver Routes
       { path: 'driver', Component: DriverDashboard },
       { path: 'driver/students', Component: DriverDashboard },
       { path: 'driver/tracking', Component: DriverDashboard },
       { path: 'driver/attendance', Component: DriverDashboard },
+      { path: 'driver/notifications', Component: RoleCenter },
+      { path: 'driver/profile', Component: RoleCenter },
+      { path: 'driver/settings', Component: RoleCenter },
       // Student Routes
       { path: 'student', Component: StudentDashboard },
       { path: 'student/tracking', Component: StudentDashboard },
       { path: 'student/attendance', Component: StudentDashboard },
-      { path: 'student/notifications', Component: StudentDashboard },
+      { path: 'student/notifications', Component: RoleCenter },
+      { path: 'student/profile', Component: RoleCenter },
+      { path: 'student/settings', Component: RoleCenter },
       // Parent Routes
       { path: 'parent', Component: ParentDashboard },
       { path: 'parent/tracking', Component: ParentDashboard },
       { path: 'parent/child', Component: ParentDashboard },
       { path: 'parent/attendance', Component: ParentDashboard },
       { path: 'parent/contact', Component: ParentDashboard },
+      { path: 'parent/notifications', Component: RoleCenter },
+      { path: 'parent/profile', Component: RoleCenter },
+      { path: 'parent/settings', Component: RoleCenter },
       // Fallback
       { path: '*', Component: NotFound },
     ],

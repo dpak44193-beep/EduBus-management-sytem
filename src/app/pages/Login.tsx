@@ -2,44 +2,88 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'motion/react';
-import { Bus, Shield, Car, BookOpen, User, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Bus, Shield, Car, BookOpen, User, Eye, EyeOff, AlertCircle, CheckCircle2, MapPinned } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Card } from '../components/ui/card';
+import { LiveMap } from '../components/map/LiveMap';
 
+function RoleButton({
+  label,
+  selected,
+  onClick,
+  Icon,
+  accent,
+}: {
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+  Icon: React.ComponentType<{ className?: string }>;
+  accent: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all ${
+        selected ? `${accent} border` : 'text-[#3E3E3E] hover:bg-white'
+      }`}
+    >
+      <Icon className="h-4 w-4" />
+      {label}
+    </button>
+  );
+}
+
+function DemoCredentials({ roleLabel, email, password }: { roleLabel: string; email: string; password: string }) {
+  return (
+    <div className="mb-6 rounded-xl border border-[#E8E8E8] bg-[#F9F7F4] p-3 text-sm text-[#3E3E3E]">
+      <div className="flex items-center gap-2 font-medium">
+        <CheckCircle2 className="h-4 w-4 text-[#06D6A0]" />
+        Demo credentials for {roleLabel}
+      </div>
+      <div className="mt-2 font-mono text-xs text-[#3E3E3E]">
+        {email} / {password}
+      </div>
+    </div>
+  );
+}
 
 const roles = [
-  { id: 'admin', label: 'Admin', icon: Shield, color: 'blue', demo: { email: 'admin', pass: 'admin123' }, desc: 'Full system control' },
-  { id: 'driver', label: 'Driver', icon: Car, color: 'emerald', demo: { email: 'driver1', pass: 'driver123' }, desc: 'Route & tracking' },
-  { id: 'student', label: 'Student', icon: BookOpen, color: 'violet', demo: { email: 'student1', pass: 'student123' }, desc: 'Bus status & history' },
-  { id: 'parent', label: 'Parent', icon: User, color: 'orange', demo: { email: 'parent1', pass: 'parent123' }, desc: 'Track your child' },
+  { id: 'admin', label: 'Admin', icon: Shield, color: 'blue', demo: { email: import.meta.env.VITE_DEMO_ADMIN_EMAIL ?? '', pass: import.meta.env.VITE_DEMO_ADMIN_PASSWORD ?? '' }, desc: 'Full system control' },
+  { id: 'driver', label: 'Driver', icon: Car, color: 'teal', demo: { email: import.meta.env.VITE_DEMO_DRIVER_EMAIL ?? '', pass: import.meta.env.VITE_DEMO_DRIVER_PASSWORD ?? '' }, desc: 'Route & tracking' },
+  { id: 'student', label: 'Student', icon: BookOpen, color: 'blueSoft', demo: { email: import.meta.env.VITE_DEMO_STUDENT_EMAIL ?? '', pass: import.meta.env.VITE_DEMO_STUDENT_PASSWORD ?? '' }, desc: 'Bus status & history' },
+  { id: 'parent', label: 'Parent', icon: User, color: 'orange', demo: { email: import.meta.env.VITE_DEMO_PARENT_EMAIL ?? '', pass: import.meta.env.VITE_DEMO_PARENT_PASSWORD ?? '' }, desc: 'Track your child' },
 ];
 
 const colorMap: Record<string, { bg: string; border: string; text: string; ring: string; btn: string }> = {
   blue: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    text: 'text-blue-700',
-    ring: 'ring-blue-500',
-    btn: 'bg-blue-600 hover:bg-blue-700',
+    bg: 'bg-[#E3F2FD]',
+    border: 'border-[#0F4C75]',
+    text: 'text-[#0F4C75]',
+    ring: 'ring-[#0F4C75]',
+    btn: 'bg-[#0F4C75] hover:bg-[#0b3d5f]',
   },
-  emerald: {
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-200',
-    text: 'text-emerald-700',
-    ring: 'ring-emerald-500',
-    btn: 'bg-emerald-600 hover:bg-emerald-700',
+  teal: {
+    bg: 'bg-[#E6FFFB]',
+    border: 'border-[#00A896]',
+    text: 'text-[#00A896]',
+    ring: 'ring-[#00A896]',
+    btn: 'bg-[#00A896] hover:bg-[#008d7a]',
   },
-  violet: {
-    bg: 'bg-violet-50',
-    border: 'border-violet-200',
-    text: 'text-violet-700',
-    ring: 'ring-violet-500',
-    btn: 'bg-violet-600 hover:bg-violet-700',
+  blueSoft: {
+    bg: 'bg-[#EEF5FF]',
+    border: 'border-[#3C7CBF]',
+    text: 'text-[#3C7CBF]',
+    ring: 'ring-[#3C7CBF]',
+    btn: 'bg-[#3C7CBF] hover:bg-[#295d99]',
   },
   orange: {
-    bg: 'bg-orange-50',
-    border: 'border-orange-200',
-    text: 'text-orange-700',
-    ring: 'ring-orange-500',
-    btn: 'bg-orange-600 hover:bg-orange-700',
+    bg: 'bg-[#FFF3ED]',
+    border: 'border-[#FF6B35]',
+    text: 'text-[#FF6B35]',
+    ring: 'ring-[#FF6B35]',
+    btn: 'bg-[#FF6B35] hover:bg-[#e95a2d]',
   },
 };
 
@@ -54,8 +98,8 @@ export function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [selectedRole, setSelectedRole] = useState('admin');
-  const [email, setEmail] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState(roles[0].demo.email);
+  const [password, setPassword] = useState(roles[0].demo.pass);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -76,7 +120,7 @@ export function Login() {
     setError('');
     setLoading(true);
     await new Promise(r => setTimeout(r, 600));
-    const result = login(email, password);
+    const result = await login(email, password);
     setLoading(false);
     if (result.success) {
       navigate(redirectMap[selectedRole]);
@@ -86,187 +130,181 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900">
-      {/* Left Panel */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 relative overflow-hidden p-12">
-        {/* Background image */}
-        <img
-          src="https://images.unsplash.com/photo-1595381340654-0c76e22190a7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzY2hvb2wlMjBidXMlMjBjaXR5JTIwcm9hZCUyMHRyYW5zcG9ydGF0aW9ufGVufDF8fHx8MTc3NTE0MjA3Mnww&ixlib=rb-4.1.0&q=80&w=1080"
-          alt="Bus"
-          className="absolute inset-0 w-full h-full object-cover opacity-20"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/60 to-slate-900/80" />
-
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-16">
-            <div className="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
-              <Bus className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <div className="text-white font-extrabold text-2xl">BusTrack</div>
-              <div className="text-blue-300 text-sm">School Bus Management</div>
-            </div>
-          </div>
-
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <h2 className="text-white text-4xl font-extrabold leading-tight mb-6">
-              Smart School<br />Transportation<br />
-              <span className="text-blue-400">Management</span>
-            </h2>
-            <p className="text-slate-300 text-base leading-relaxed max-w-sm">
-              Real-time GPS tracking, digital attendance, instant notifications, and complete transparency for schools, drivers, students & parents.
-            </p>
-          </motion.div>
+    <div className="min-h-screen flex bg-[#F9F7F4]">
+      <div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-gradient-to-br from-[#0F4C75] via-[#0D3F62] to-[#00A896] p-12">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute -top-16 right-8 h-52 w-52 rounded-full bg-[#00A896] blur-3xl" />
+          <div className="absolute bottom-12 left-6 h-72 w-72 rounded-full bg-[#FF6B35] blur-3xl" />
         </div>
 
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="relative z-10 grid grid-cols-3 gap-4"
-        >
-          {[
-            { label: 'Students', value: '10+', icon: '👨‍🎓' },
-            { label: 'Active Buses', value: '3', icon: '🚌' },
-            { label: 'Routes', value: '3', icon: '🗺️' },
-          ].map(stat => (
-            <div key={stat.label} className="bg-white/10 backdrop-blur rounded-2xl p-4 text-center">
-              <div className="text-2xl mb-1">{stat.icon}</div>
-              <div className="text-white font-bold text-xl">{stat.value}</div>
-              <div className="text-white/60 text-xs">{stat.label}</div>
+        <div className="relative z-10 flex flex-col justify-between w-full">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/12 shadow-lg backdrop-blur-sm ring-1 ring-white/20">
+              <Bus className="h-7 w-7 text-white" />
             </div>
-          ))}
-        </motion.div>
+            <div>
+              <div className="text-2xl font-bold text-white">Campus Transit</div>
+              <div className="text-sm text-[#E3F2FD]">Education transport platform</div>
+            </div>
+          </div>
+
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="max-w-md">
+            <h1 className="mb-4 text-5xl font-bold leading-tight text-white">
+              Smart mobility for every campus journey.
+            </h1>
+            <p className="max-w-sm text-lg leading-relaxed text-[#E3F2FD]">
+              Real-time bus tracking, attendance visibility, and secure route coordination for students, drivers, parents, and admins.
+            </p>
+          </motion.div>
+
+          <div className="my-8 hidden lg:block">
+            <LiveMap showAllBuses height={210} />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 text-white">
+            {[
+              { label: 'Students', value: '3,847', icon: '👨‍🎓' },
+              { label: 'Buses', value: '24', icon: '🚌' },
+              { label: 'Routes', value: '18', icon: '🗺️' },
+            ].map(stat => (
+              <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/8 p-4 text-center backdrop-blur-sm">
+                <div className="mb-2 text-2xl">{stat.icon}</div>
+                <div className="text-2xl font-bold">{stat.value}</div>
+                <div className="text-xs text-[#E3F2FD]">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Right Panel - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
-        >
-          {/* Mobile Logo */}
-          <div className="flex items-center gap-3 mb-8 lg:hidden justify-center">
-            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-              <Bus className="w-6 h-6 text-white" />
+      <div className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-16">
+        <motion.div initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }} className="w-full max-w-md">
+          <div className="mb-8 flex items-center gap-3 lg:hidden">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0F4C75] text-white shadow-md">
+              <Bus className="h-6 w-6" />
             </div>
-            <span className="text-white font-bold text-xl">BusTrack</span>
+            <div>
+              <div className="text-2xl font-bold text-[#0F4C75]">Campus Transit</div>
+            </div>
           </div>
 
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-            <div className="p-8">
-              <h3 className="text-slate-800 font-bold text-2xl mb-1">Welcome Back</h3>
-              <p className="text-slate-500 text-sm mb-6">Select your role and sign in to continue</p>
+          <Card className="rounded-[28px] border-[#E8E8E8] bg-white p-7 shadow-[0_10px_30px_rgba(15,76,117,0.08)]">
+            <div className="mb-7">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#00A896]">Welcome back</p>
+              <h2 className="text-3xl font-bold text-[#1A1A1A]">Sign in to your account</h2>
+            </div>
 
-              {/* Role Selection */}
-              <div className="grid grid-cols-2 gap-2 mb-6">
-                {roles.map(r => {
-                  const Icon = r.icon;
-                  const c = colorMap[r.color];
-                  const isSelected = selectedRole === r.id;
-                  return (
-                    <button
-                      key={r.id}
-                      onClick={() => handleRoleSelect(r.id)}
-                      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left
-                        ${isSelected
-                          ? `${c.bg} ${c.border} ${c.text} ring-2 ${c.ring} ring-offset-1 shadow-sm`
-                          : 'border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50'
-                        }`}
-                    >
-                      <Icon className="w-4 h-4 flex-shrink-0" />
-                      <div>
-                        <div className="text-xs font-bold">{r.label}</div>
-                        <div className="text-xs opacity-70">{r.desc}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+            <div className="mb-6 flex gap-2 rounded-xl bg-[#F5F5F5] p-1.5">
+              {roles.map(r => {
+                const Icon = r.icon;
+                const isSelected = selectedRole === r.id;
+                const c = colorMap[r.color];
 
-              {/* Demo Credentials Banner */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-5 flex items-center gap-2">
-                <span className="text-lg">💡</span>
-                <div className="text-xs text-slate-600">
-                  <span className="font-semibold">Demo – {role.label}:</span>{' '}
-                  <code className="bg-slate-200 px-1 rounded">{role.demo.email}</code> /{' '}
-                  <code className="bg-slate-200 px-1 rounded">{role.demo.pass}</code>
-                </div>
-              </div>
-
-              {/* Form */}
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
-                    Username / Email
-                  </label>
-                  <input
-                    type="text"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
-                    placeholder="Enter username"
-                    required
+                return (
+                  <RoleButton
+                    key={r.id}
+                    label={r.label}
+                    selected={isSelected}
+                    onClick={() => handleRoleSelect(r.id)}
+                    Icon={Icon}
+                    accent={`${c.bg} ${c.text} ${c.border}`}
                   />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                );
+              })}
+            </div>
+
+            {role.demo.email && role.demo.pass && <DemoCredentials roleLabel={role.label} email={role.demo.email} password={role.demo.pass} />}
+
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div>
+                <label htmlFor="email" className="mb-2 block text-sm font-semibold text-[#1A1A1A]">
+                  Email address
+                </label>
+                <Input
+                  id="email"
+                  type="text"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="name@institution.edu"
+                  className="h-12 rounded-xl border-2 border-[#E8E8E8] bg-white px-4 py-3 text-[#1A1A1A] outline-none transition-all placeholder:text-[#757575] focus:border-[#0F4C75] focus:shadow-focus"
+                  required
+                />
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <label htmlFor="password" className="block text-sm font-semibold text-[#1A1A1A]">
                     Password
                   </label>
-                  <div className="relative">
-                    <input
-                      type={showPass ? 'text' : 'password'}
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all pr-10"
-                      placeholder="Enter password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPass(s => !s)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    >
-                      {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+                  <button type="button" className="text-sm font-medium text-[#00A896] hover:text-[#0F4C75]">
+                    Forgot?
+                  </button>
                 </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPass ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="h-12 rounded-xl border-2 border-[#E8E8E8] bg-white px-4 py-3 pr-11 text-[#1A1A1A] outline-none transition-all placeholder:text-[#757575] focus:border-[#0F4C75] focus:shadow-focus"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(!showPass)}
+                    className="absolute inset-y-0 right-3 flex items-center text-[#757575] hover:text-[#0F4C75]"
+                  >
+                    {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
 
-                {error && (
-                  <div className="flex items-center gap-2 text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5 text-sm">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                    {error}
-                  </div>
-                )}
+              <div className="flex items-center gap-2 text-sm text-[#3E3E3E]">
+                <input type="checkbox" id="remember" className="h-4 w-4 rounded border-[#0F4C75] text-[#0F4C75] focus:ring-[#0F4C75]" />
+                <label htmlFor="remember">Keep me signed in</label>
+              </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={`w-full py-3 rounded-xl text-white font-semibold text-sm transition-all shadow-md hover:shadow-lg active:scale-95 mt-2
-                    ${colors.btn} disabled:opacity-60 disabled:cursor-not-allowed`}
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Signing in...
-                    </span>
-                  ) : `Sign in as ${role.label}`}
+              {error && (
+                <div className="flex items-center gap-2 rounded-xl border border-[#E63946]/20 bg-[#FFEBEE] px-3 py-2.5 text-sm text-[#E63946]">
+                  <AlertCircle className="h-4 w-4" />
+                  {error}
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className={`w-full rounded-xl px-4 py-3.5 font-semibold text-white shadow-md transition-all hover:shadow-lg ${colors.btn} disabled:cursor-not-allowed disabled:opacity-75`}
+              >
+                {loading ? 'Signing in...' : `Sign in as ${role.label}`}
+              </Button>
+
+              <div className="flex items-center gap-3 py-1">
+                <div className="h-px flex-1 bg-[#E8E8E8]" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#757575]">or</span>
+                <div className="h-px flex-1 bg-[#E8E8E8]" />
+              </div>
+
+              <div className="space-y-3">
+                <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#E8E8E8] bg-white px-4 py-3 font-semibold text-[#1A1A1A] transition-all hover:bg-[#F5F5F5]">
+                  <MapPinned className="h-4 w-4 text-[#0F4C75]" />
+                  Continue with Google
                 </button>
-              </form>
-            </div>
+                <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#E8E8E8] bg-white px-4 py-3 font-semibold text-[#1A1A1A] transition-all hover:bg-[#F5F5F5]">
+                  <Shield className="h-4 w-4 text-[#00A896]" />
+                  Continue with Microsoft
+                </button>
+              </div>
+            </form>
 
-            {/* Footer */}
-            <div className="bg-slate-50 border-t border-slate-100 px-8 py-4 flex items-center justify-between">
-              <span className="text-xs text-slate-400">🔒 Secured with JWT Auth</span>
-              <span className="text-xs text-slate-400">BusTrack v2.0</span>
-            </div>
-          </div>
+            <p className="mt-6 text-center text-sm text-[#3E3E3E]">
+              Need access?{' '}
+              <button type="button" className="font-semibold text-[#00A896] hover:text-[#0F4C75]">
+                Request access
+              </button>
+            </p>
+          </Card>
         </motion.div>
       </div>
     </div>

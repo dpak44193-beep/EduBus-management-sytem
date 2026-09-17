@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router';
 import {
   LayoutDashboard, Users, Car, MapPin, ClipboardList,
   BarChart3, Route, LogOut, Bell, Shield, User,
-  Navigation, BookOpen, PhoneCall, X, Bus
+  Navigation, BookOpen, PhoneCall, X, Bus, Settings, UserCircle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { notifications } from '../../data/mockData';
@@ -21,6 +21,9 @@ const adminNav = [
   { to: '/admin/attendance', label: 'Attendance', icon: ClipboardList },
   { to: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/admin/routes', label: 'Routes', icon: Route },
+  { to: '/admin/notifications', label: 'Notifications', icon: Bell },
+  { to: '/admin/profile', label: 'My Profile', icon: UserCircle },
+  { to: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 const driverNav = [
@@ -28,6 +31,9 @@ const driverNav = [
   { to: '/driver/students', label: 'My Students', icon: Users },
   { to: '/driver/tracking', label: 'Live Tracking', icon: Navigation },
   { to: '/driver/attendance', label: 'Mark Attendance', icon: ClipboardList },
+  { to: '/driver/notifications', label: 'Notifications', icon: Bell },
+  { to: '/driver/profile', label: 'My Profile', icon: UserCircle },
+  { to: '/driver/settings', label: 'Settings', icon: Settings },
 ];
 
 const studentNav = [
@@ -35,6 +41,8 @@ const studentNav = [
   { to: '/student/tracking', label: 'Bus Location', icon: MapPin },
   { to: '/student/attendance', label: 'My Attendance', icon: ClipboardList },
   { to: '/student/notifications', label: 'Notifications', icon: Bell },
+  { to: '/student/profile', label: 'My Profile', icon: UserCircle },
+  { to: '/student/settings', label: 'Settings', icon: Settings },
 ];
 
 const parentNav = [
@@ -43,6 +51,9 @@ const parentNav = [
   { to: '/parent/child', label: 'My Child', icon: User },
   { to: '/parent/attendance', label: 'Attendance', icon: BookOpen },
   { to: '/parent/contact', label: 'Contact Driver', icon: PhoneCall },
+  { to: '/parent/notifications', label: 'Notifications', icon: Bell },
+  { to: '/parent/profile', label: 'My Profile', icon: UserCircle },
+  { to: '/parent/settings', label: 'Settings', icon: Settings },
 ];
 
 const navByRole: Record<string, typeof adminNav> = {

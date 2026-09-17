@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { notifications } from '../../data/mockData';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router';
 
 interface HeaderProps {
   title: string;
@@ -24,6 +25,7 @@ const typeIcons: Record<string, string> = {
 
 export function Header({ title, onMenuClick }: HeaderProps) {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const role = currentUser?.role ?? 'admin';
   const [notifOpen, setNotifOpen] = useState(false);
   const [readIds, setReadIds] = useState<string[]>([]);
@@ -130,7 +132,7 @@ export function Header({ title, onMenuClick }: HeaderProps) {
                   )}
                 </div>
                 <div className="px-4 py-2 text-center border-t border-slate-100">
-                  <button className="text-xs text-blue-600 hover:underline">View all notifications</button>
+                  <button onClick={() => navigate(`/${role}/notifications`)} className="text-xs text-blue-600 hover:underline">View all notifications</button>
                 </div>
               </motion.div>
             </>
