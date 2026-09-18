@@ -26,12 +26,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const requestedRole = role ?? 'admin';
 
     if (normalizedEmail === DEMO_EMAIL && password === DEMO_PASSWORD) {
+      const demoUserMap: Record<User['role'], Partial<User>> = {
+        admin: {
+          id: 'demo-admin',
+          name: 'Admin Demo',
+          email: DEMO_EMAIL,
+          role: 'admin',
+          phone: '+1 000 000 0000',
+        },
+        driver: {
+          id: 'demo-driver',
+          name: 'Driver Demo',
+          email: DEMO_EMAIL,
+          role: 'driver',
+          phone: '+1 000 000 0000',
+          driverId: 'd1',
+          busId: 'b1',
+        },
+        student: {
+          id: 'demo-student',
+          name: 'Student Demo',
+          email: DEMO_EMAIL,
+          role: 'student',
+          phone: '+1 000 000 0000',
+          studentId: 's1',
+          busId: 'b1',
+        },
+        parent: {
+          id: 'demo-parent',
+          name: 'Parent Demo',
+          email: DEMO_EMAIL,
+          role: 'parent',
+          phone: '+1 000 000 0000',
+          studentId: 's1',
+          busId: 'b1',
+        },
+      };
+
       const demoUser: User = {
-        id: `demo-${requestedRole}`,
-        name: `${requestedRole.charAt(0).toUpperCase()}${requestedRole.slice(1)} Demo`,
+        id: demoUserMap[requestedRole].id ?? `demo-${requestedRole}`,
+        name: demoUserMap[requestedRole].name ?? `${requestedRole.charAt(0).toUpperCase()}${requestedRole.slice(1)} Demo`,
         email: DEMO_EMAIL,
         role: requestedRole,
-        phone: '+1 000 000 0000',
+        phone: demoUserMap[requestedRole].phone ?? '+1 000 000 0000',
+        studentId: demoUserMap[requestedRole].studentId,
+        driverId: demoUserMap[requestedRole].driverId,
+        busId: demoUserMap[requestedRole].busId,
       };
 
       setCurrentUser(demoUser);

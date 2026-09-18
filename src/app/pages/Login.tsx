@@ -35,6 +35,22 @@ function RoleButton({
   );
 }
 
+function BusLogoImage({ className = '' }: { className?: string }) {
+  const [useFallback, setUseFallback] = useState(false);
+
+  return useFallback ? (
+    <Bus className={className} />
+  ) : (
+    <img
+      src="/bus-logo.jpg"
+      alt="Campus Transit logo"
+      className={className}
+      onError={() => setUseFallback(true)}
+      draggable={false}
+    />
+  );
+}
+
 function DemoCredentials({ roleLabel, email, password }: { roleLabel: string; email: string; password: string }) {
   return (
     <div className="mb-6 rounded-xl border border-[#E8E8E8] bg-[#F9F7F4] p-3 text-sm text-[#3E3E3E]">
@@ -106,6 +122,7 @@ export function Login() {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
 
   const role = roles.find(r => r.id === selectedRole)!;
   const colors = colorMap[role.color];
@@ -121,6 +138,7 @@ export function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setStatusMessage('');
     setLoading(true);
     await new Promise(r => setTimeout(r, 600));
     const result = await login(email, password, selectedRole as 'admin' | 'driver' | 'student' | 'parent');
@@ -132,9 +150,21 @@ export function Login() {
     }
   };
 
+  const handleSocialLogin = (provider: 'Google' | 'Microsoft') => {
+    setError('');
+    setStatusMessage(`${provider} demo sign-in is enabled for the ${role.label.toLowerCase()} role.`);
+    navigate(redirectMap[selectedRole]);
+  };
+
+  const handleRequestAccess = () => {
+    setError('');
+    setStatusMessage(`Access request sent for the ${role.label.toLowerCase()} role. Use the demo login while approval is in progress.`);
+  };
+
   return (
-    <div className="min-h-screen flex bg-[#F9F7F4]">
-      <div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-gradient-to-br from-[#0F4C75] via-[#0D3F62] to-[#00A896] p-12">
+    <div className="h-screen w-full overflow-hidden bg-[#F9F7F4]">
+      <div className="flex h-full w-full bg-[#F9F7F4]">
+      <div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-gradient-to-br from-[#0F4C75] via-[#0D3F62] to-[#00A896] p-6 xl:p-8">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute -top-16 right-8 h-52 w-52 rounded-full bg-[#00A896] blur-3xl" />
           <div className="absolute bottom-12 left-6 h-72 w-72 rounded-full bg-[#FF6B35] blur-3xl" />
@@ -142,8 +172,8 @@ export function Login() {
 
         <div className="relative z-10 flex flex-col justify-between w-full">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/12 shadow-lg backdrop-blur-sm ring-1 ring-white/20">
-              <Bus className="h-7 w-7 text-white" />
+            <div className="flex h-16 w-24 items-center justify-center overflow-hidden rounded-2xl bg-[#F4B400]/15 shadow-lg ring-1 ring-white/20 backdrop-blur-sm">
+              <BusLogoImage className="h-full w-full object-cover" />
             </div>
             <div>
               <div className="text-2xl font-bold text-white">Campus Transit</div>
@@ -152,16 +182,16 @@ export function Login() {
           </div>
 
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="max-w-md">
-            <h1 className="mb-4 text-5xl font-bold leading-tight text-white">
+            <h1 className="mb-3 text-3xl font-bold leading-tight text-white xl:text-4xl">
               Smart mobility for every campus journey.
             </h1>
-            <p className="max-w-sm text-lg leading-relaxed text-[#E3F2FD]">
+            <p className="max-w-sm text-sm leading-relaxed text-[#E3F2FD] xl:text-base">
               Real-time bus tracking, attendance visibility, and secure route coordination for students, drivers, parents, and admins.
             </p>
           </motion.div>
 
-          <div className="my-8 hidden lg:block">
-            <LiveMap showAllBuses height={210} />
+          <div className="my-5 hidden lg:block">
+            <LiveMap showAllBuses height={160} />
           </div>
 
           <div className="grid grid-cols-3 gap-4 text-white">
@@ -180,24 +210,24 @@ export function Login() {
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-16">
-        <motion.div initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }} className="w-full max-w-md">
+      <div className="flex flex-1 items-center justify-center px-4 py-4 sm:px-6 lg:px-10">
+        <motion.div initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }} className="w-full max-w-[430px]">
           <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0F4C75] text-white shadow-md">
-              <Bus className="h-6 w-6" />
+            <div className="flex h-14 w-16 items-center justify-center overflow-hidden rounded-xl bg-[#F4B400]/15 shadow-md ring-1 ring-[#0F4C75]/10">
+              <BusLogoImage className="h-full w-full object-cover" />
             </div>
             <div>
               <div className="text-2xl font-bold text-[#0F4C75]">Campus Transit</div>
             </div>
           </div>
 
-          <Card className="rounded-[28px] border-[#E8E8E8] bg-white p-7 shadow-[0_10px_30px_rgba(15,76,117,0.08)]">
-            <div className="mb-7">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#00A896]">Welcome back</p>
-              <h2 className="text-3xl font-bold text-[#1A1A1A]">Sign in to your account</h2>
+          <Card className="rounded-[24px] border-[#E8E8E8] bg-white p-4 shadow-[0_10px_30px_rgba(15,76,117,0.08)] sm:p-5">
+            <div className="mb-4">
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#00A896]">Welcome back</p>
+              <h2 className="text-2xl font-bold text-[#1A1A1A]">Sign in to your account</h2>
             </div>
 
-            <div className="mb-6 flex gap-2 rounded-xl bg-[#F5F5F5] p-1.5">
+            <div className="mb-4 flex gap-2 rounded-xl bg-[#F5F5F5] p-1.5">
               {roles.map(r => {
                 const Icon = r.icon;
                 const isSelected = selectedRole === r.id;
@@ -218,7 +248,7 @@ export function Login() {
 
             {role.demo.email && role.demo.pass && <DemoCredentials roleLabel={role.label} email={role.demo.email} password={role.demo.pass} />}
 
-            <form onSubmit={handleLogin} className="space-y-5">
+            <form onSubmit={handleLogin} className="space-y-3">
               <div>
                 <label htmlFor="email" className="mb-2 block text-sm font-semibold text-[#1A1A1A]">
                   Email address
@@ -268,10 +298,10 @@ export function Login() {
                 <label htmlFor="remember">Keep me signed in</label>
               </div>
 
-              {error && (
-                <div className="flex items-center gap-2 rounded-xl border border-[#E63946]/20 bg-[#FFEBEE] px-3 py-2.5 text-sm text-[#E63946]">
-                  <AlertCircle className="h-4 w-4" />
-                  {error}
+              {(error || statusMessage) && (
+                <div className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm ${error ? 'border-[#E63946]/20 bg-[#FFEBEE] text-[#E63946]' : 'border-[#06D6A0]/20 bg-[#E8FFF9] text-[#0A7F66]'}`}>
+                  {error ? <AlertCircle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                  {error || statusMessage}
                 </div>
               )}
 
@@ -290,25 +320,26 @@ export function Login() {
               </div>
 
               <div className="space-y-3">
-                <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#E8E8E8] bg-white px-4 py-3 font-semibold text-[#1A1A1A] transition-all hover:bg-[#F5F5F5]">
+                <button type="button" onClick={() => handleSocialLogin('Google')} className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#E8E8E8] bg-white px-4 py-3 font-semibold text-[#1A1A1A] transition-all hover:bg-[#F5F5F5]">
                   <MapPinned className="h-4 w-4 text-[#0F4C75]" />
                   Continue with Google
                 </button>
-                <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#E8E8E8] bg-white px-4 py-3 font-semibold text-[#1A1A1A] transition-all hover:bg-[#F5F5F5]">
+                <button type="button" onClick={() => handleSocialLogin('Microsoft')} className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#E8E8E8] bg-white px-4 py-3 font-semibold text-[#1A1A1A] transition-all hover:bg-[#F5F5F5]">
                   <Shield className="h-4 w-4 text-[#00A896]" />
                   Continue with Microsoft
                 </button>
               </div>
             </form>
 
-            <p className="mt-6 text-center text-sm text-[#3E3E3E]">
+            <p className="mt-4 text-center text-sm text-[#3E3E3E]">
               Need access?{' '}
-              <button type="button" className="font-semibold text-[#00A896] hover:text-[#0F4C75]">
+              <button type="button" onClick={handleRequestAccess} className="font-semibold text-[#00A896] hover:text-[#0F4C75]">
                 Request access
               </button>
             </p>
           </Card>
         </motion.div>
+      </div>
       </div>
     </div>
   );

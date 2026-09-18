@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { routes, schoolLocation } from '../../data/mockData';
 
+const stopLabels = ['Stop 1', 'Stop 2', 'Stop 3', 'Stop 4', 'Stop 5'];
+
 interface BusPosition {
   id: string;
   x: number;
@@ -47,6 +49,7 @@ export function LiveMap({ highlightBusId, showAllBuses = true, selectedRouteId, 
     };
   }));
   const [hoveredBus, setHoveredBus] = useState<string | null>(null);
+  const [selectedBusId, setSelectedBusId] = useState<string | null>(highlightBusId ?? null);
   const animationRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -77,6 +80,12 @@ export function LiveMap({ highlightBusId, showAllBuses = true, selectedRouteId, 
 
   const visibleBuses = showAllBuses ? busPositions : busPositions.filter((bus) => bus.id === highlightBusId);
   const visibleRoutes = selectedRouteId ? routes.filter((route) => route.id === selectedRouteId) : routes;
+  const selectedBus = busPositions.find((bus) => bus.id === (selectedBusId ?? highlightBusId)) ?? null;
+  const selectedRoute = selectedBus ? routes.find((route) => route.id === selectedBus.routeId) ?? null : null;
+
+  useEffect(() => {
+    setSelectedBusId(highlightBusId ?? null);
+  }, [highlightBusId]);
 
   return (
     <div className="relative w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100" style={{ height }}>
@@ -91,7 +100,7 @@ export function LiveMap({ highlightBusId, showAllBuses = true, selectedRouteId, 
 
       <div className="pointer-events-none absolute inset-0 bg-sky-900/10" />
 
-      <svg viewBox="0 0 800 480" className="absolute inset-0 block h-full w-full" aria-label="Demo bus routes and live positions">
+      <svg viewBox="0 0 800 480" className="pointer-events-none absolute inset-0 block h-full w-full" aria-label="Demo bus routes and live positions" onClick={() => setSelectedBusId(null)}>
         {visibleRoutes.map((route) => (
           <polyline
             key={route.id}
@@ -121,6 +130,7 @@ export function LiveMap({ highlightBusId, showAllBuses = true, selectedRouteId, 
         {visibleBuses.map((bus) => {
           const isHighlighted = highlightBusId === bus.id || !highlightBusId;
           const scale = hoveredBus === bus.id ? 1.25 : 1;
+          const routeName = routes.find((item) => item.id === bus.routeId)?.name ?? 'Route';
           return (
             <g
               key={bus.id}
@@ -128,7 +138,21 @@ export function LiveMap({ highlightBusId, showAllBuses = true, selectedRouteId, 
               opacity={isHighlighted ? 1 : 0.4}
               onMouseEnter={() => setHoveredBus(bus.id)}
               onMouseLeave={() => setHoveredBus(null)}
-              className="cursor-pointer"
+              onClick={(event) => {
+                event.stopPropagation();
+                setSelectedBusId((current) => current === bus.id ? null : bus.id);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  setSelectedBusId((current) => current === bus.id ? null : bus.id);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label={`${bus.busNumber} on ${routeName}. Click to view route direction details.`}
+              className="cursor-pointer outline-none"
+              style={{ pointerEvents: 'auto' }}
             >
               <circle r="20" fill={bus.color} opacity="0.22">
                 <animate attributeName="r" values="16;24;16" dur="2s" repeatCount="indefinite" />
@@ -144,11 +168,57 @@ export function LiveMap({ highlightBusId, showAllBuses = true, selectedRouteId, 
       </svg>
 
       <div className="absolute left-3 top-3 z-10 rounded-lg border border-white/70 bg-white/90 px-3 py-2 shadow-sm backdrop-blur">
-        <div className="text-[10px] font-bold tracking-[0.12em] text-slate-500">LIVE DEMO TRACKING</div>
+        <div className="text-[10px] font-bold tracking-[0.12em] text-slate-500">LIVE GPS TRACKING</div>
         <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-slate-700">
           <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" /> {visibleBuses.length} active {visibleBuses.length === 1 ? 'bus' : 'buses'}
         </div>
       </div>
+
+      {selectedBus && selectedRoute && (
+        <div className="absolute bottom-3 left-3 z-10 w-[290px] rounded-xl border border-slate-200 bg-white/95 p-3 shadow-lg backdrop-blur">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">Direction details</div>
+            <span className="inline-flex h-2.5 w-2.5 rounded-full" style={{ backgroundColor: selectedBus.color }} />
+          </div>
+
+          <div className="mt-2 border-l-2 border-slate-200 pl-2">
+            <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Route</div>
+            <div className="mt-1 text-sm font-bold text-slate-800">{selectedRoute.name}</div>
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-slate-600">
+            <div className="rounded-lg bg-slate-50 p-2">
+              <div className="text-slate-400">Status</div>
+              <div className="mt-1 font-semibold text-emerald-600">On route</div>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-2">
+              <div className="text-slate-400">Speed</div>
+              <div className="mt-1 font-semibold text-slate-800">{Math.round((selectedBus.speed || 0.008) * 1000)} km/h</div>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-2">
+              <div className="text-slate-400">Distance</div>
+              <div className="mt-1 font-semibold text-slate-800">{selectedRoute.distance} km</div>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-2">
+              <div className="text-slate-400">ETA</div>
+              <div className="mt-1 font-semibold text-slate-800">~{selectedRoute.estimatedTime} min</div>
+            </div>
+          </div>
+
+          <div className="mt-3">
+            <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-slate-500">Stops</div>
+            <div className="mt-2 space-y-1.5">
+              {selectedRoute.stops.map((stop, index) => (
+                <div key={stop.id} className="flex items-center gap-2 rounded-md bg-slate-50 px-2 py-1 text-[11px] text-slate-600">
+                  <span className="inline-flex h-2.5 w-2.5 rounded-full" style={{ backgroundColor: selectedRoute.color }} />
+                  <span className="min-w-[48px] font-semibold text-slate-700">{stopLabels[index] ?? `Stop ${index + 1}`}</span>
+                  <span className="truncate">{stop.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="absolute bottom-3 right-3 z-10 rounded-md bg-slate-950/75 px-2.5 py-1.5 text-[10px] font-medium text-white backdrop-blur">
         Google Maps · Karpagam College of Engineering

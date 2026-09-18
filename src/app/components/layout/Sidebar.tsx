@@ -10,7 +10,9 @@ import { useState } from 'react';
 
 interface SidebarProps {
   open: boolean;
+  collapsed: boolean;
   onClose: () => void;
+  onToggleCollapse: () => void;
 }
 
 const adminNav = [
@@ -84,7 +86,23 @@ const roleIcons: Record<string, React.ElementType> = {
   parent: User,
 };
 
-export function Sidebar({ open, onClose }: SidebarProps) {
+function SidebarLogoImage({ className = '' }: { className?: string }) {
+  const [useFallback, setUseFallback] = useState(false);
+
+  return useFallback ? (
+    <Bus className={className} />
+  ) : (
+    <img
+      src="/bus-logo.jpg"
+      alt="Campus Transit logo"
+      className={className}
+      onError={() => setUseFallback(true)}
+      draggable={false}
+    />
+  );
+}
+
+export function Sidebar({ open, collapsed, onClose, onToggleCollapse }: SidebarProps) {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const role = currentUser?.role ?? 'admin';
@@ -108,41 +126,46 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       )}
 
       <aside
-        className={`fixed top-0 left-0 h-full z-40 flex flex-col bg-gradient-to-b ${roleColors[role]} shadow-2xl transition-transform duration-300 ease-in-out
+        className={`fixed top-0 left-0 h-full z-40 flex flex-col bg-gradient-to-b ${roleColors[role]} shadow-2xl transition-all duration-300 ease-in-out
         ${open ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0 lg:static lg:z-auto w-64`}
+        lg:translate-x-0 lg:static lg:z-auto ${collapsed ? 'lg:w-20' : 'lg:w-64'} w-64`}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-            <Bus className="w-6 h-6 text-white" />
+        <div className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-5'} py-5 border-b border-white/10`}>
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center overflow-hidden ring-1 ring-white/20 flex-shrink-0">
+            <SidebarLogoImage className="h-full w-full object-cover" />
           </div>
-          <div>
-            <div className="text-white font-bold text-base leading-tight">BusTrack</div>
-            <div className="text-white/60 text-xs">Management System</div>
-          </div>
+          {!collapsed && (
+            <div>
+              <div className="text-white font-bold text-base leading-tight">Campus Transit</div>
+              <div className="text-white/60 text-xs">Management System</div>
+            </div>
+          )}
           <button
-            onClick={onClose}
-            className="ml-auto lg:hidden text-white/70 hover:text-white p-1 rounded"
+            onClick={collapsed ? onToggleCollapse : onClose}
+            className={`ml-auto text-white/70 hover:text-white p-1 rounded ${collapsed ? 'hidden lg:block' : 'lg:hidden'}`}
+            aria-label={collapsed ? 'Expand sidebar' : 'Close sidebar'}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* User profile */}
-        <div className="px-4 py-4 border-b border-white/10">
-          <div className="flex items-center gap-3">
+        <div className={`px-4 py-4 border-b border-white/10 ${collapsed ? 'lg:px-2' : ''}`}>
+          <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
             <div className="w-10 h-10 rounded-full bg-white/25 flex items-center justify-center flex-shrink-0">
               <RoleIcon className="w-5 h-5 text-white" />
             </div>
-            <div className="min-w-0">
-              <div className="text-white font-semibold text-sm truncate">{currentUser?.name}</div>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"></span>
-                <span className="text-white/60 text-xs">{roleLabels[role]}</span>
+            {!collapsed && (
+              <div className="min-w-0">
+                <div className="text-white font-semibold text-sm truncate">{currentUser?.name}</div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"></span>
+                  <span className="text-white/60 text-xs">{roleLabels[role]}</span>
+                </div>
               </div>
-            </div>
-            {unreadCount > 0 && (
+            )}
+            {!collapsed && unreadCount > 0 && (
               <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
                 {unreadCount}
               </span>
@@ -151,10 +174,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 overflow-y-auto">
-          <div className="text-white/40 text-xs font-semibold uppercase tracking-wider px-2 mb-3">
-            Main Menu
-          </div>
+        <nav className={`flex-1 ${collapsed ? 'px-2' : 'px-3'} py-4 overflow-y-auto`}>
+          {!collapsed && (
+            <div className="text-white/40 text-xs font-semibold uppercase tracking-wider px-2 mb-3">
+              Main Menu
+            </div>
+          )}
           <ul className="space-y-1">
             {navItems.map(item => {
               const Icon = item.icon;
@@ -164,8 +189,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                     to={item.to}
                     end={item.end}
                     onClick={onClose}
+                    title={collapsed ? item.label : undefined}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
+                      `flex items-center ${collapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5'} rounded-xl text-sm font-medium transition-all duration-150
                       ${isActive
                         ? 'bg-white/20 text-white shadow-sm'
                         : 'text-white/70 hover:bg-white/10 hover:text-white'
@@ -173,8 +199,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                     }
                   >
                     <Icon className="w-4.5 h-4.5 flex-shrink-0" />
-                    {item.label}
-                    {item.label === 'Notifications' && unreadCount > 0 && (
+                    {!collapsed && <span>{item.label}</span>}
+                    {!collapsed && item.label === 'Notifications' && unreadCount > 0 && (
                       <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                         {unreadCount}
                       </span>
@@ -187,13 +213,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </nav>
 
         {/* Bottom section */}
-        <div className="px-3 pb-4 border-t border-white/10 pt-3">
+        <div className={`px-3 pb-4 border-t border-white/10 pt-3 ${collapsed ? 'lg:px-2' : ''}`}>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/70 hover:bg-red-500/20 hover:text-red-300 text-sm font-medium transition-all"
+            title={collapsed ? 'Sign out' : undefined}
+            className={`w-full flex items-center ${collapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5'} rounded-xl text-white/70 hover:bg-red-500/20 hover:text-red-300 text-sm font-medium transition-all`}
           >
             <LogOut className="w-4.5 h-4.5" />
-            Sign Out
+            {!collapsed && 'Sign Out'}
           </button>
         </div>
       </aside>

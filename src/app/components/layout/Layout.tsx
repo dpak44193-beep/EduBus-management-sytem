@@ -40,6 +40,7 @@ const titleMap: Record<string, string> = {
 
 export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
   const { currentUser } = useAuth();
   const title = titleMap[location.pathname] ?? 'BusTrack';
@@ -51,9 +52,19 @@ export function Layout() {
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        open={sidebarOpen}
+        collapsed={sidebarCollapsed}
+        onClose={() => setSidebarOpen(false)}
+        onToggleCollapse={() => setSidebarCollapsed((value) => !value)}
+      />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <Header title={title} onMenuClick={() => setSidebarOpen(true)} />
+        <Header
+          title={title}
+          onMenuClick={() => setSidebarOpen(true)}
+          onToggleSidebar={() => setSidebarCollapsed((value) => !value)}
+          sidebarCollapsed={sidebarCollapsed}
+        />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <Outlet />
         </main>

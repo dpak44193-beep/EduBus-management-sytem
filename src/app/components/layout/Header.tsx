@@ -1,4 +1,4 @@
-import { Menu, Bell, Search, RefreshCw } from 'lucide-react';
+import { Menu, Bell, Search, RefreshCw, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { notifications } from '../../data/mockData';
 import { useState } from 'react';
@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router';
 interface HeaderProps {
   title: string;
   onMenuClick: () => void;
+  onToggleSidebar: () => void;
+  sidebarCollapsed: boolean;
 }
 
 const typeColors: Record<string, string> = {
@@ -23,7 +25,7 @@ const typeIcons: Record<string, string> = {
   pickup: '🟢', drop: '🔵', alert: '⚠️', delay: '🕐', emergency: '🚨', info: 'ℹ️',
 };
 
-export function Header({ title, onMenuClick }: HeaderProps) {
+export function Header({ title, onMenuClick, onToggleSidebar, sidebarCollapsed }: HeaderProps) {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const role = currentUser?.role ?? 'admin';
@@ -42,6 +44,14 @@ export function Header({ title, onMenuClick }: HeaderProps) {
         className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100"
       >
         <Menu className="w-5 h-5" />
+      </button>
+
+      <button
+        onClick={onToggleSidebar}
+        className="hidden lg:flex p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+        aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      >
+        {sidebarCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
       </button>
 
       <div className="flex-1">
