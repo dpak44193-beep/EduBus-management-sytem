@@ -12,6 +12,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET;
 const allowedOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
+const DEMO_EMAIL = 'demo@demo.com';
+const DEMO_PASSWORD = 'demo@123';
+const DEMO_ROLES = ['admin', 'driver', 'student', 'parent'];
 
 if (!JWT_SECRET) {
   throw new Error('JWT_SECRET must be configured before starting the API');
@@ -176,11 +179,26 @@ app.get('/api/notifications', authenticate, async (req, res) => {
 });
 
 app.post('/api/auth/login', async (req, res) => {
-  const { email, password } = req.body ?? {};
+  const { email, password, role } = req.body ?? {};
   const normalizedEmail = String(email ?? '').trim();
+  const requestedRole = DEMO_ROLES.includes(String(role ?? '').trim()) ? String(role).trim() : 'admin';
 
   if (!normalizedEmail || !password) {
     return res.status(400).json({ success: false, error: 'Email and password are required.' });
+  }
+
+  if (normalizedEmail.toLowerCase() === DEMO_EMAIL.toLowerCase() && String(password) === DEMO_PASSWORD) {
+    const demoUser = {
+      id: `demo-${requestedRole}`,
+      name: `${requestedRole.charAt(0).toUpperCase()}${requestedRole.slice(1)} Demo`,
+      email: DEMO_EMAIL,
+      role: requestedRole,
+      phone: '+1 000 000 0000',
+      active: true,
+    };
+
+    const token = jwt.sign({ sub: demoUser.id, role: demoUser.role }, JWT_SECRET, { expiresIn: '8h' });
+    return res.json({ success: true, token, user: demoUser });
   }
 
   const user = await User.findOne({ email: normalizedEmail, active: true });

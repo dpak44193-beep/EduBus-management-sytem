@@ -49,11 +49,14 @@ function DemoCredentials({ roleLabel, email, password }: { roleLabel: string; em
   );
 }
 
+const DEMO_EMAIL = 'demo@demo.com';
+const DEMO_PASSWORD = 'demo@123';
+
 const roles = [
-  { id: 'admin', label: 'Admin', icon: Shield, color: 'blue', demo: { email: import.meta.env.VITE_DEMO_ADMIN_EMAIL ?? '', pass: import.meta.env.VITE_DEMO_ADMIN_PASSWORD ?? '' }, desc: 'Full system control' },
-  { id: 'driver', label: 'Driver', icon: Car, color: 'teal', demo: { email: import.meta.env.VITE_DEMO_DRIVER_EMAIL ?? '', pass: import.meta.env.VITE_DEMO_DRIVER_PASSWORD ?? '' }, desc: 'Route & tracking' },
-  { id: 'student', label: 'Student', icon: BookOpen, color: 'blueSoft', demo: { email: import.meta.env.VITE_DEMO_STUDENT_EMAIL ?? '', pass: import.meta.env.VITE_DEMO_STUDENT_PASSWORD ?? '' }, desc: 'Bus status & history' },
-  { id: 'parent', label: 'Parent', icon: User, color: 'orange', demo: { email: import.meta.env.VITE_DEMO_PARENT_EMAIL ?? '', pass: import.meta.env.VITE_DEMO_PARENT_PASSWORD ?? '' }, desc: 'Track your child' },
+  { id: 'admin', label: 'Admin', icon: Shield, color: 'blue', demo: { email: DEMO_EMAIL, pass: DEMO_PASSWORD }, desc: 'Full system control' },
+  { id: 'driver', label: 'Driver', icon: Car, color: 'teal', demo: { email: DEMO_EMAIL, pass: DEMO_PASSWORD }, desc: 'Route & tracking' },
+  { id: 'student', label: 'Student', icon: BookOpen, color: 'blueSoft', demo: { email: DEMO_EMAIL, pass: DEMO_PASSWORD }, desc: 'Bus status & history' },
+  { id: 'parent', label: 'Parent', icon: User, color: 'orange', demo: { email: DEMO_EMAIL, pass: DEMO_PASSWORD }, desc: 'Track your child' },
 ];
 
 const colorMap: Record<string, { bg: string; border: string; text: string; ring: string; btn: string }> = {
@@ -120,7 +123,7 @@ export function Login() {
     setError('');
     setLoading(true);
     await new Promise(r => setTimeout(r, 600));
-    const result = await login(email, password);
+    const result = await login(email, password, selectedRole as 'admin' | 'driver' | 'student' | 'parent');
     setLoading(false);
     if (result.success) {
       navigate(redirectMap[selectedRole]);

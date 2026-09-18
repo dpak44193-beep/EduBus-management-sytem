@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../data/mockData';
 
+const DEMO_EMAIL = 'demo@demo.com';
+const DEMO_PASSWORD = 'demo@123';
+
 interface AuthContextType {
   currentUser: User | null;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string, role?: User['role']) => Promise<{ success: boolean; error?: string }>;
   updateProfile: (profile: { name: string; phone: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -18,12 +21,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return stored && token ? JSON.parse(stored) : null;
   });
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, role?: User['role']) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const requestedRole = role ?? 'admin';
+
+    if (normalizedEmail === DEMO_EMAIL && password === DEMO_PASSWORD) {
+      const demoUser: User = {
+        id: `demo-${requestedRole}`,
+        name: `${requestedRole.charAt(0).toUpperCase()}${requestedRole.slice(1)} Demo`,
+        email: DEMO_EMAIL,
+        role: requestedRole,
+        phone: '+1 000 000 0000',
+      };
+
+      setCurrentUser(demoUser);
+      localStorage.setItem('bms_user', JSON.stringify(demoUser));
+      localStorage.setItem('bms_token', 'demo-token');
+      return { success: true };
+    }
+
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL ?? 'http://localhost:5000'}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, role: requestedRole }),
       });
 
       const data = await response.json();
